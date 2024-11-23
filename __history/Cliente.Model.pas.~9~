@@ -1,0 +1,76 @@
+unit Cliente.Model;
+
+interface
+
+uses
+  System.Classes, System.SysUtils, System.Net.HttpClient, System.JSON;
+
+const
+  VIA_CEP_API = 'https://viacep.com.br/ws/%s/json/';
+
+type
+  TCliente = class
+  private
+    FNome: string;
+    FCPF: string;
+    FDataNascimento: TDateTime;
+    FEmail: string;
+    FLogradouro: string;
+    FNumero: string;
+    FBairro: string;
+    FCidade: string;
+    FEstado: string;
+    FCEP: string;
+    FClienteID: Integer;
+  public
+    procedure SetCEP(const Value: string);
+    property Nome: string read FNome write FNome;
+    property CPF: string read FCPF write FCPF;
+    property DataNascimento: TDateTime read FDataNascimento write FDataNascimento;
+    property Email: string read FEmail write FEmail;
+    property Logradouro: string read FLogradouro write FLogradouro;
+    property Numero: string read FNumero write FNumero;
+    property Bairro: string read FBairro write FBairro;
+    property Cidade: string read FCidade write FCidade;
+    property Estado: string read FEstado write FEstado;
+    property CEP: string read FCEP write SetCEP;
+    property ClienteID: Integer read FClienteID write FClienteID;
+  end;
+
+implementation
+
+{ TCliente }
+
+procedure TCliente.SetCEP(const Value: string);
+var
+  HttpClient: THttpClient;
+  Response: IHTTPResponse;
+  JSONValue: TJSONValue;
+  JSONObject: TJSONObject;
+begin
+  FCEP := Value;
+  HttpClient := THttpClient.Create;
+  try
+    Response := HttpClient.Get(Format(VIA_CEP_API, [Value]));
+    if Response.StatusCode = 200 then
+    begin
+      JSONValue := TJSONObject.ParseJSONValue(Response.ContentAsString);
+      try
+        if JSONValue is TJSONObject then
+        begin
+          JSONObject := TJSONObject(JSONValue);
+          FLogradouro := JSONObject.GetValue<string>('logradouro');
+          FBairro := JSONObject.GetValue<string>('bairro');
+          FCidade := JSONObject.GetValue<string>('localidade');
+          FEstado := JSONObject.GetValue<string>('uf');
+        end;
+      finally
+        JSONValue.Free;
+      end;
+    end;
+  finally
+    HttpClient.Free;
+  end;
+end;
+
+end.

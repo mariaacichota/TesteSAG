@@ -1,0 +1,34 @@
+unit Cliente.Model;
+
+interface
+
+type
+  TCliente = class
+  private
+    FNome: string;
+    FCPF: string;
+    FDataNascimento: TDateTime;
+    FEmail: string;
+    FLogradouro: string;
+    FNumero: string;
+    FBairro: string;
+    FCidade: string;
+    FEstado: string;
+    FCEP: string;
+    procedure SetCEP(const Value: string);
+  public
+    property Nome: string read FNome write FNome;
+    property CPF: string read FCPF write FCPF;
+    property DataNascimento: TDateTime read FDataNascimento write FDataNascimento;
+    property Email: string read FEmail write FEmail;
+    property Logradouro: string read FLogradouro write FLogradouro;
+    property Numero: string read FNumero write FNumero;
+    property Bairro: string read FBairro write FBairro;
+    property Cidade: string read FCidade write FCidade;
+    property Estado: string read FEstado write FEstado;
+    property CEP: string read FCEP write SetCEP;
+  end;
+
+implementation
+
+end.

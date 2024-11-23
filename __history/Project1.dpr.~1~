@@ -1,0 +1,16 @@
+program Project1;
+
+uses
+  Vcl.Forms,
+  Cliente.View in 'Cliente.View.pas' {Form1},
+  Cliente.Model in 'Cliente.Model.pas',
+  Cliente.ViewModel in 'Cliente.ViewModel.pas';
+
+{$R *.res}
+
+begin
+  Application.Initialize;
+  Application.MainFormOnTaskbar := True;
+  Application.CreateForm(TForm1, Form1);
+  Application.Run;
+end.

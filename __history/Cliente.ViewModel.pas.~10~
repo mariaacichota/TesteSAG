@@ -1,0 +1,138 @@
+unit Cliente.ViewModel;
+
+interface
+
+uses
+  System.Classes, System.SysUtils, Data.DB, FireDAC.Comp.Client, FireDAC.Stan.Param, Cliente.Model,
+  FireDAC.DApt;
+
+type
+
+  TClienteViewModel = class
+  private
+    FConnection: TFDConnection;
+    FQuery: TFDQuery;
+  public
+    constructor Create(AConnection: TFDConnection);
+    destructor Destroy; override;
+    procedure CreateCliente(ACliente: TCliente);
+    procedure UpdateCliente(ACliente: TCliente);
+    procedure DeleteCliente(ClienteID: Integer);
+    function ReadCliente(ClienteID: Integer): TCliente;
+    function ClientExists(const CPF: string): Boolean;
+    procedure PopulateEnderecoByCEP(ACliente: TCliente);
+  end;
+
+implementation
+
+{ TClienteViewModel }
+
+function TClienteViewModel.ClientExists(const CPF: string): Boolean;
+begin
+  Result := False;
+
+  if CPF.Trim = EmptyStr then
+    Exit;
+
+  // Consulta SQL para verificar se o CPF já existe no banco
+  with FDQuery do
+  begin
+    SQL.Text := 'SELECT COUNT(*) FROM Clientes WHERE CPF = :CPF';
+    ParamByName('CPF').AsString := CPF;
+    Open;  // Executa a consulta no banco de dados
+    Result := Fields[0].AsInteger > 0;  // Se o contador for maior que zero, o cliente existe
+  end;
+end;
+
+constructor TClienteViewModel.Create(AConnection: TFDConnection);
+begin
+  FConnection := AConnection;
+  FQuery := TFDQuery.Create(nil);
+  FQuery.Connection := FConnection;
+end;
+
+destructor TClienteViewModel.Destroy;
+begin
+  FQuery.Free;
+  inherited;
+end;
+
+procedure TClienteViewModel.CreateCliente(ACliente: TCliente);
+begin
+  FQuery.SQL.Text := 'INSERT INTO Clientes (Nome, CPF, DataNascimento, Email, Logradouro, Numero, Bairro, Cidade, Estado, CEP) ' +
+                     'VALUES (:Nome, :CPF, :DataNascimento, :Email, :Logradouro, :Numero, :Bairro, :Cidade, :Estado, :CEP)';
+  FQuery.ParamByName('Nome').AsString := ACliente.Nome;
+  FQuery.ParamByName('CPF').AsString := ACliente.CPF;
+  FQuery.ParamByName('DataNascimento').AsDateTime := ACliente.DataNascimento;
+  FQuery.ParamByName('Email').AsString := ACliente.Email;
+  FQuery.ParamByName('Logradouro').AsString := ACliente.Logradouro;
+  FQuery.ParamByName('Numero').AsString := ACliente.Numero;
+  FQuery.ParamByName('Bairro').AsString := ACliente.Bairro;
+  FQuery.ParamByName('Cidade').AsString := ACliente.Cidade;
+  FQuery.ParamByName('Estado').AsString := ACliente.Estado;
+  FQuery.ParamByName('CEP').AsString := ACliente.CEP;
+  FQuery.ExecSQL;
+end;
+
+procedure TClienteViewModel.UpdateCliente(ACliente: TCliente);
+begin
+  FQuery.SQL.Text := 'UPDATE Clientes SET Nome = :Nome, CPF = :CPF, DataNascimento = :DataNascimento, ' +
+                     'Email = :Email, Logradouro = :Logradouro, Numero = :Numero, Bairro = :Bairro, ' +
+                     'Cidade = :Cidade, Estado = :Estado, CEP = :CEP WHERE ClienteID = :ClienteID';
+  FQuery.ParamByName('Nome').AsString := ACliente.Nome;
+  FQuery.ParamByName('CPF').AsString := ACliente.CPF;
+  FQuery.ParamByName('DataNascimento').AsDateTime := ACliente.DataNascimento;
+  FQuery.ParamByName('Email').AsString := ACliente.Email;
+  FQuery.ParamByName('Logradouro').AsString := ACliente.Logradouro;
+  FQuery.ParamByName('Numero').AsString := ACliente.Numero;
+  FQuery.ParamByName('Bairro').AsString := ACliente.Bairro;
+  FQuery.ParamByName('Cidade').AsString := ACliente.Cidade;
+  FQuery.ParamByName('Estado').AsString := ACliente.Estado;
+  FQuery.ParamByName('CEP').AsString := ACliente.CEP;
+  FQuery.ParamByName('ClienteID').AsInteger := ACliente.ClienteID;
+  FQuery.ExecSQL;
+end;
+
+procedure TClienteViewModel.DeleteCliente(ClienteID: Integer);
+begin
+  FQuery.SQL.Text := 'DELETE FROM Clientes WHERE ClienteID = :ClienteID';
+  FQuery.ParamByName('ClienteID').AsInteger := ClienteID;
+  FQuery.ExecSQL;
+end;
+
+function TClienteViewModel.ReadCliente(ClienteID: Integer): TCliente;
+var
+  ACliente: TCliente;
+begin
+  FQuery.SQL.Text := 'SELECT * FROM Clientes WHERE ClienteID = :ClienteID';
+  FQuery.ParamByName('ClienteID').AsInteger := ClienteID;
+  FQuery.Open;
+  try
+    if not FQuery.IsEmpty then
+    begin
+      ACliente := TCliente.Create;
+      ACliente.Nome := FQuery.FieldByName('Nome').AsString;
+      ACliente.CPF := FQuery.FieldByName('CPF').AsString;
+      ACliente.DataNascimento := FQuery.FieldByName('DataNascimento').AsDateTime;
+      ACliente.Email := FQuery.FieldByName('Email').AsString;
+      ACliente.Logradouro := FQuery.FieldByName('Logradouro').AsString;
+      ACliente.Numero := FQuery.FieldByName('Numero').AsString;
+      ACliente.Bairro := FQuery.FieldByName('Bairro').AsString;
+      ACliente.Cidade := FQuery.FieldByName('Cidade').AsString;
+      ACliente.Estado := FQuery.FieldByName('Estado').AsString;
+      ACliente.CEP := FQuery.FieldByName('CEP').AsString;
+      Result := ACliente;
+    end
+    else
+      Result := nil;
+  finally
+    FQuery.Close;
+  end;
+end;
+
+procedure TClienteViewModel.PopulateEnderecoByCEP(ACliente: TCliente);
+begin
+  ACliente.SetCEP(ACliente.CEP);
+end;
+
+end.
