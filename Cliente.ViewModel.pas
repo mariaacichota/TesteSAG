@@ -90,7 +90,7 @@ begin
   FQuery.ParamByName('Cidade').AsString := ACliente.Cidade;
   FQuery.ParamByName('Estado').AsString := ACliente.Estado;
   FQuery.ParamByName('CEP').AsString := ACliente.CEP;
-  FQuery.ParamByName('ClienteID').AsString := ACliente.ClienteID;
+  FQuery.ParamByName('ClienteID').AsInteger := ACliente.ClienteID;
   FQuery.ExecSQL;
 end;
 
